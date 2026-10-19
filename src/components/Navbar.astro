@@ -1,0 +1,39 @@
+---
+// Simple navbar component that gets hidden during print
+// import logo from '../assets/quinvy-logo.svg';
+---
+<nav class="fixed top-0 left-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-gray-100 no-print">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+     <div class="flex justify-between h-16 items-center">
+      
+      <!-- Brand Logo -->
+      <a href="https://quinvy.com" class="flex items-center gap-3 no-underline cursor-pointer">
+        <div class="w-10 h-10 bg-emerald-50 p-1.5 rounded-lg flex items-center justify-center">
+          <img
+            src="/free-invoice-generator/quinvy-logo.svg"
+            alt="Quinvy Logo"
+            class="h-full w-auto object-contain"
+          />
+        </div>
+        <span class="font-bold text-xl text-gray-900 tracking-tight">Quinvy</span>
+      </a>
+
+      <!-- CTA Links -->
+      <div class="flex items-center gap-4">
+        <a
+          href="/app/auth/login"
+          class="text-gray-600 hover:text-primary transition font-medium text-sm no-underline hidden sm:block"
+        >
+          Login
+        </a>
+        <a
+          href="/app/auth/register"
+          class="bg-primary hover:bg-[#037851] text-white px-5 py-2 rounded-full font-semibold text-sm transition shadow-md shadow-primary/20 no-underline"
+        >
+          Start for Free
+        </a>
+      </div>
+
+    </div>
+  </div>
+</nav>

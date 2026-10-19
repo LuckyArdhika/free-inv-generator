@@ -1,0 +1,1786 @@
+---
+// Interactive Invoice Generator Component
+---
+
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+  <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+    
+    <!-- LEFT PANEL: Editor Form (Hidden on Print) -->
+    <div class="lg:col-span-6 bg-white border border-gray-200 rounded-2xl shadow-sm p-6 sm:p-8 no-print space-y-8">
+      
+      <!-- INVOICE STORAGE & MANAGEMENT TOOLBAR -->
+      <div class="bg-gray-50/90 border border-gray-200/90 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-xs">
+        <!-- Active invoice status info -->
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div id="status-indicator-dot" class="w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0"></div>
+          <div class="flex flex-col min-w-0">
+            <div class="flex items-center gap-1.5 flex-wrap">
+              <span class="text-xxs font-bold uppercase tracking-wider text-gray-500">Invoice:</span>
+              <span id="active-inv-badge-title" class="text-xs font-bold text-gray-900 truncate max-w-[170px]">New Draft</span>
+              <span id="active-inv-status-badge" class="px-2 py-0.5 rounded-full text-xxs font-extrabold uppercase border bg-amber-50 text-amber-700 border-amber-300">Pending</span>
+              <button 
+                type="button" 
+                id="btn-unlink-invoice" 
+                class="hidden text-xxs text-gray-400 hover:text-gray-700 underline font-medium cursor-pointer"
+                title="Unlink from saved invoice and edit as a new independent draft"
+              >
+                Unlink
+              </button>
+            </div>
+            <span id="active-inv-last-saved" class="text-xxs text-gray-400">Not saved yet</span>
+          </div>
+        </div>
+
+        <!-- Toolbar Action Buttons -->
+        <div class="flex items-center gap-2 ml-auto">
+          <!-- Button: Open Saved Invoices Modal -->
+          <button 
+            type="button" 
+            id="btn-open-saved-modal" 
+            class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-700 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition shadow-xs cursor-pointer"
+            title="Manage saved invoices in local storage"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path></svg>
+            <span>Saved</span>
+            <span id="saved-invoices-count-badge" class="px-1.5 py-0.2 bg-emerald-50 text-primary border border-emerald-200 rounded-full text-xxs font-extrabold">0</span>
+          </button>
+
+          <!-- Button: Save / Update Invoice -->
+          <button 
+            type="button" 
+            id="btn-save-invoice" 
+            class="inline-flex items-center gap-1.5 px-3.5 py-1.5 text-xs font-bold text-white bg-primary hover:bg-[#037851] rounded-lg transition shadow-sm shadow-primary/20 cursor-pointer"
+            title="Save current invoice into local storage"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            <span id="btn-save-text">Save Invoice</span>
+          </button>
+
+          <!-- Button: New Blank Invoice -->
+          <button 
+            type="button" 
+            id="btn-new-invoice" 
+            class="inline-flex items-center gap-1 px-2.5 py-1.5 text-xs font-semibold text-gray-600 bg-white border border-gray-200 rounded-lg hover:bg-gray-100 hover:text-gray-900 transition shadow-xs cursor-pointer"
+            title="Start a new blank invoice"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+            <span>New</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Section 1: Logo & Basic Info -->
+      <div>
+        <h2 class="text-lg font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2">1. Basic Details</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Invoice Number</label>
+            <input type="text" id="input-inv-number" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors" placeholder="e.g. INV-2026-001" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Invoice Status</label>
+            <select id="input-status" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors font-semibold cursor-pointer">
+              <option value="Draft">Draft</option>
+              <option value="Pending" selected>Pending / Unpaid</option>
+              <option value="Paid">Paid</option>
+              <option value="Overdue">Overdue</option>
+            </select>
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Currency</label>
+            <select id="input-currency" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors">
+              <option value="$" data-code="USD">USD ($)</option>
+              <option value="€" data-code="EUR">EUR (€)</option>
+              <option value="£" data-code="GBP">GBP (£)</option>
+              <option value="¥" data-code="JPY">JPY (¥)</option>
+              <option value="A$" data-code="AUD">AUD (A$)</option>
+              <option value="C$" data-code="CAD">CAD (C$)</option>
+              <option value="CHF" data-code="CHF">CHF (CHF)</option>
+              <option value="₹" data-code="INR">INR (₹)</option>
+              <option value="Rp" data-code="IDR">IDR (Rp)</option>
+              <option value="S$" data-code="SGD">SGD (S$)</option>
+              <option value="custom" data-code="CUSTOM">Custom...</option>
+            </select>
+          </div>
+          <div id="custom-currency-container" class="hidden sm:col-span-2">
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Custom Currency Symbol / Code</label>
+            <input type="text" id="input-custom-currency" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors" placeholder="e.g. BTC or ₿" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Issue Date</label>
+            <input type="date" id="input-date-issue" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Due Date</label>
+            <input type="date" id="input-date-due" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors" />
+          </div>
+        </div>
+        
+        <!-- Logo Uploader -->
+        <div class="mt-4">
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Invoice Logo</label>
+          <div class="flex items-center gap-4">
+            <div id="logo-preview-container" class="w-16 h-16 border border-dashed border-gray-200 rounded-lg flex items-center justify-center overflow-hidden bg-gray-50">
+              <span id="logo-placeholder" class="text-gray-400 flex items-center justify-center">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="3" rx="2" ry="2"/><circle cx="9" cy="9" r="2"/><path d="m21 15-3.086-3.086a2 2 0 0 0-2.828 0L6 21"/></svg>
+              </span>
+              <img id="logo-preview" class="hidden w-full h-full object-contain" alt="Preview" />
+            </div>
+            <div class="flex-1">
+              <input type="file" id="input-logo" accept="image/*" class="hidden" />
+              <button type="button" id="btn-upload-logo" class="bg-gray-100 hover:bg-gray-200 text-gray-700 text-xs font-semibold px-4 py-2 rounded-lg transition-colors">Upload Logo</button>
+              <button type="button" id="btn-remove-logo" class="hidden hover:text-red-600 text-gray-500 text-xs font-semibold px-3 py-2 rounded-lg transition-colors ml-2">Remove</button>
+              <p class="text-xxs text-gray-400 mt-1">Recommended: Square format, PNG/JPG under 1MB.</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Accent Color Picker -->
+        <div class="mt-4 pt-4 border-t border-gray-100">
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Invoice Accent Color</label>
+          <div class="flex items-center gap-3">
+            <input type="color" id="input-accent-color" class="w-10 h-10 border border-gray-200 rounded-lg cursor-pointer bg-transparent p-0.5" value="#048c5f" />
+            <span class="text-xs font-semibold text-gray-600 uppercase" id="accent-color-hex">#048c5f</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Addresses -->
+      <div>
+        <h2 class="text-lg font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2">2. Party Addresses</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <!-- From Address -->
+          <div class="space-y-3">
+            <h3 class="text-xs font-bold uppercase text-primary tracking-wider">Sender Info (From)</h3>
+            <input type="text" id="input-from-company" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors" placeholder="Company Name" />
+            <input type="text" id="input-from-name" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors" placeholder="Sender Name" />
+            <input type="email" id="input-from-email" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors" placeholder="Email Address" />
+            <textarea id="input-from-address" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors" placeholder="Company Address"></textarea>
+          </div>
+          
+          <!-- To Address -->
+          <div class="space-y-3">
+            <h3 class="text-xs font-bold uppercase text-primary tracking-wider">Client Info (Bill To)</h3>
+            <input type="text" id="input-to-company" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors" placeholder="Client Company" />
+            <input type="text" id="input-to-name" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors" placeholder="Client Contact Name" />
+            <input type="email" id="input-to-email" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors" placeholder="Client Email" />
+            <textarea id="input-to-address" rows="3" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors" placeholder="Client Address"></textarea>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 3: Line Items -->
+      <div>
+        <h2 class="text-lg font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2">3. Line Items</h2>
+        <div class="space-y-3" id="editor-line-items-container">
+          <!-- Dynamically populated rows in script -->
+        </div>
+        <button type="button" id="btn-add-item" class="mt-4 flex items-center gap-2 text-primary hover:text-[#037851] text-sm font-semibold transition-colors">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+          Add Line Item
+        </button>
+      </div>
+
+      <!-- Section 4: Taxes, Discounts & Notes -->
+      <div>
+        <h2 class="text-lg font-bold text-gray-900 mb-4 border-b border-gray-100 pb-2">4. Summary & Terms</h2>
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Tax Rate (%)</label>
+            <input type="number" id="input-tax" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors" placeholder="e.g. 10" min="0" max="100" step="0.01" />
+          </div>
+          <div>
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Discount (%)</label>
+            <input type="number" id="input-discount" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors" placeholder="e.g. 5" min="0" max="100" step="0.01" />
+          </div>
+          <div class="sm:col-span-2">
+            <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Shipping Cost</label>
+            <div class="relative flex items-center">
+              <span class="absolute left-3 text-xs font-bold text-gray-400 currency-symbol-label">$</span>
+              <input type="number" id="input-shipping" class="w-full bg-gray-50 border border-gray-200 rounded-lg pl-7 pr-3 py-2 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors" placeholder="e.g. 50" min="0" step="0.01" />
+            </div>
+          </div>
+        </div>
+        
+        <div>
+          <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-1">Payment Notes / Bank Details / Instructions</label>
+          <textarea id="input-notes" rows="4" class="w-full bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-primary focus:bg-white transition-colors" placeholder="e.g. Bank Account details, crypto wallets, or payment terms."></textarea>
+        </div>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="pt-4 flex flex-wrap gap-3 border-t border-gray-100">
+        <button type="button" id="btn-print-invoice" class="flex-1 bg-primary hover:bg-[#037851] text-white font-bold px-5 py-3 rounded-xl transition-all shadow-md shadow-primary/20 flex items-center justify-center gap-2 cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          Print / Download PDF
+        </button>
+        <button type="button" id="btn-quick-save" class="bg-emerald-50 hover:bg-emerald-100 text-primary border border-emerald-200 font-bold px-4 py-3 rounded-xl transition-colors flex items-center justify-center gap-1.5 text-sm cursor-pointer">
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+          <span id="btn-quick-save-text">Save</span>
+        </button>
+        <button type="button" id="btn-reset" class="bg-gray-100 hover:bg-gray-200 text-gray-700 font-bold px-4 py-3 rounded-xl transition-colors text-sm cursor-pointer">
+          Reset Form
+        </button>
+      </div>
+
+      <!-- Marketing Banner Integration inside Editor -->
+      <div class="bg-gradient-to-br from-emerald-50 to-teal-50 border border-emerald-100 rounded-xl p-4 mt-6">
+        <h4 class="text-xs font-bold uppercase tracking-wider text-primary mb-1">Get Paid 10x Faster!</h4>
+        <p class="text-xs text-gray-600 mb-3 leading-relaxed">
+          Tired of editing invoices manually? Sign up on <strong>Quinvy</strong> to set up automated reminders, collect credit cards/crypto, and track payments in real time.
+        </p>
+        <a href="/app/auth/register" class="inline-flex items-center gap-1.5 text-xs text-primary font-bold hover:underline">
+          Create Free Account 
+          <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+        </a>
+      </div>
+
+    </div>
+
+    <!-- RIGHT PANEL: Live A4 Preview (Print Area) -->
+    <div class="lg:col-span-6 lg:sticky lg:top-24 w-full">
+      
+      <!-- Template Selector (No Print) -->
+      <div class="mb-4 bg-white border border-gray-200 rounded-2xl p-4 shadow-sm no-print">
+        <label class="block text-xs font-bold uppercase tracking-wider text-gray-500 mb-3">
+          Select Invoice Design Template
+        </label>
+        <div class="flex flex-wrap gap-2">
+          <button 
+            type="button" 
+            class="template-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
+            data-template="minimal"
+          >
+            Clean Minimalist
+          </button>
+          <button 
+            type="button" 
+            class="template-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
+            data-template="banner"
+          >
+            Corporate Banner
+          </button>
+          <button 
+            type="button" 
+            class="template-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
+            data-template="grid"
+          >
+            Structured Grid
+          </button>
+          <button 
+            type="button" 
+            class="template-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
+            data-template="classic"
+          >
+            Classic Editorial
+          </button>
+          <button 
+            type="button" 
+            class="template-btn px-3 py-1.5 rounded-lg text-xs font-semibold transition-all border border-gray-200 bg-white text-gray-700 hover:bg-gray-50 cursor-pointer"
+            data-template="tech"
+          >
+            Developer Tech
+          </button>
+        </div>
+      </div>
+
+      <div class="w-full bg-white border border-gray-200 rounded-2xl shadow-xl p-8 sm:p-12 print-area max-w-[800px] mx-auto min-h-[900px] flex flex-col justify-between" id="invoice-sheet">
+        
+        <div>
+          <!-- Preview Header -->
+          <div class="preview-header-block flex flex-col sm:flex-row justify-between items-start gap-4 mb-8">
+            <div class="flex items-center gap-4">
+              <!-- Logo Container -->
+              <div id="preview-logo-container" class="hidden w-16 h-16 items-center justify-center overflow-hidden">
+                <img id="preview-logo" class="w-full h-full object-contain" alt="Company Logo" />
+              </div>
+              <div>
+                <h1 class="text-2xl font-black text-gray-900 tracking-tight" id="preview-from-company">Your Company</h1>
+                <p class="text-xs text-gray-500 font-medium" id="preview-from-name">Your Name</p>
+              </div>
+            </div>
+            <div class="text-left sm:text-right">
+              <div class="flex items-center sm:justify-end gap-2 mb-1 flex-wrap">
+                <h2 class="text-2xl font-black uppercase theme-text-color tracking-wider">Invoice</h2>
+                <span id="preview-status-badge" class="px-2.5 py-0.5 rounded-full text-xxs font-extrabold uppercase tracking-wider border bg-amber-50 text-amber-700 border-amber-300">
+                  Pending
+                </span>
+              </div>
+              <p class="text-sm font-bold text-gray-900" id="preview-inv-number">#INV-2026-001</p>
+            </div>
+          </div>
+
+          <!-- Preview Info Grid -->
+          <div class="preview-details-grid grid grid-cols-2 sm:grid-cols-3 gap-6 mb-8 text-xs pb-6 border-b border-gray-100">
+            <div>
+              <p class="font-bold text-gray-400 uppercase tracking-wider mb-2">Bill To</p>
+              <p class="font-extrabold text-gray-900 text-sm mb-1" id="preview-to-company">Client Company</p>
+              <p class="text-gray-600 mb-1" id="preview-to-name">Client Name</p>
+              <p class="text-gray-600 mb-1" id="preview-to-email">client@email.com</p>
+              <p class="text-gray-500 whitespace-pre-line leading-relaxed" id="preview-to-address">Client Address</p>
+            </div>
+            <div>
+              <p class="font-bold text-gray-400 uppercase tracking-wider mb-2">Sender Info</p>
+              <p class="text-gray-600 mb-1" id="preview-from-email">sender@email.com</p>
+              <p class="text-gray-500 whitespace-pre-line leading-relaxed" id="preview-from-address">Sender Address</p>
+            </div>
+            <div class="col-span-2 sm:col-span-1">
+              <p class="font-bold text-gray-400 uppercase tracking-wider mb-2">Invoice details</p>
+              <div class="space-y-1.5">
+                <div class="flex justify-between sm:block">
+                  <span class="text-gray-500 sm:block">Date of Issue:</span>
+                  <span class="font-bold text-gray-900" id="preview-date-issue">-</span>
+                </div>
+                <div class="flex justify-between sm:block">
+                  <span class="text-gray-500 sm:block">Due Date:</span>
+                  <span class="font-bold text-gray-900" id="preview-date-due">-</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Preview Table -->
+          <div class="mb-8">
+            <table class="w-full text-left text-xs border-collapse">
+              <thead>
+                <tr class="border-b-2 border-gray-900 uppercase font-extrabold text-gray-500">
+                  <th class="py-2.5 w-[50%]">Item Description</th>
+                  <th class="py-2.5 text-right w-[15%]">Qty</th>
+                  <th class="py-2.5 text-right w-[15%]">Rate</th>
+                  <th class="py-2.5 text-right w-[20%]">Amount</th>
+                </tr>
+              </thead>
+              <tbody id="preview-table-body" class="divide-y divide-gray-100">
+                <!-- Dynamically populated lines in script -->
+              </tbody>
+            </table>
+          </div>
+
+          <!-- Summary and Notes Block -->
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-8 text-xs pt-4">
+            
+            <!-- Left sub-grid: payment notes -->
+            <div class="sm:col-span-7">
+              <p class="font-bold text-gray-400 uppercase tracking-wider mb-2">Notes & Terms</p>
+              <p class="text-gray-500 whitespace-pre-line leading-relaxed" id="preview-notes">Payment due within 14 days of invoice date.</p>
+            </div>
+            
+            <!-- Right sub-grid: totals -->
+            <div class="sm:col-span-5 space-y-2 text-right">
+              <div class="flex justify-between border-b border-gray-100 pb-1">
+                <span class="text-gray-500">Subtotal</span>
+                <span class="font-bold text-gray-900" id="preview-subtotal">-</span>
+              </div>
+              <div id="preview-tax-row" class="hidden flex justify-between border-b border-gray-100 pb-1">
+                <span class="text-gray-500" id="preview-tax-label">Tax (0%)</span>
+                <span class="font-bold text-gray-900" id="preview-tax-value">-</span>
+              </div>
+              <div id="preview-discount-row" class="hidden flex justify-between border-b border-gray-100 pb-1 text-red-600">
+                <span class="text-red-500" id="preview-discount-label">Discount (0%)</span>
+                <span class="font-bold" id="preview-discount-value">-</span>
+              </div>
+              <div id="preview-shipping-row" class="hidden flex justify-between border-b border-gray-100 pb-1">
+                <span class="text-gray-500">Shipping</span>
+                <span class="font-bold text-gray-900" id="preview-shipping-value">-</span>
+              </div>
+              <div class="flex justify-between pt-1 text-sm">
+                <span class="font-black text-gray-900">Total</span>
+                <span class="font-black theme-text-color text-base" id="preview-total">-</span>
+              </div>
+            </div>
+
+          </div>
+
+        </div>
+
+        <!-- Sheet Footer Branding -->
+        <div class="border-t border-gray-100 pt-6 mt-12 flex justify-between items-center text-xxs text-gray-400">
+          <div>Generated using Quinvy's Free Invoice Maker</div>
+          <div>https://quinvy.com</div>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- SAVED INVOICES MODAL (Hidden on Print) -->
+<div id="saved-invoices-modal" class="fixed inset-0 bg-black/50 backdrop-blur-xs z-50 flex items-center justify-center p-4 hidden no-print transition-opacity">
+  <div class="bg-white rounded-2xl shadow-2xl border border-gray-200 w-full max-w-2xl max-h-[85vh] flex flex-col overflow-hidden animate-modal">
+    
+    <!-- Modal Header -->
+    <div class="px-6 py-4 border-b border-gray-100 flex items-center justify-between bg-gray-50/50">
+      <div class="flex items-center gap-2.5">
+        <div class="w-8 h-8 rounded-lg bg-emerald-50 text-primary flex items-center justify-center">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path></svg>
+        </div>
+        <div>
+          <h3 class="text-base font-bold text-gray-900 leading-tight">Saved Invoices</h3>
+          <p class="text-xs text-gray-500">Stored safely in your browser's LocalStorage</p>
+        </div>
+      </div>
+      <button 
+        type="button" 
+        id="btn-close-saved-modal" 
+        class="text-gray-400 hover:text-gray-700 hover:bg-gray-100 rounded-lg p-1.5 transition-colors cursor-pointer text-lg font-bold"
+        aria-label="Close modal"
+      >
+        &times;
+      </button>
+    </div>
+
+    <!-- Modal Search / Filter -->
+    <div class="px-6 py-3 border-b border-gray-100 bg-white flex items-center gap-3">
+      <div class="relative flex-1">
+        <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></svg>
+        <input 
+          type="text" 
+          id="saved-search-input" 
+          placeholder="Search by invoice number, client, or date..." 
+          class="w-full bg-gray-50 border border-gray-200 rounded-lg pl-9 pr-3 py-1.5 text-xs focus:outline-none focus:border-primary focus:bg-white transition-colors"
+        />
+      </div>
+      <span id="saved-modal-count-text" class="text-xs font-semibold text-gray-500 whitespace-nowrap">0 invoices</span>
+    </div>
+
+    <!-- Modal Status Filter Tabs -->
+    <div class="px-6 py-2 border-b border-gray-100 bg-gray-50/70 flex items-center gap-1.5 overflow-x-auto text-xxs" id="saved-status-filter-tabs">
+      <button type="button" class="status-tab-btn px-2.5 py-1 rounded-md font-bold transition cursor-pointer bg-white border border-gray-200 text-gray-800 shadow-2xs" data-status="all">All</button>
+      <button type="button" class="status-tab-btn px-2.5 py-1 rounded-md font-semibold transition cursor-pointer text-gray-500 hover:text-gray-900" data-status="Pending">Pending</button>
+      <button type="button" class="status-tab-btn px-2.5 py-1 rounded-md font-semibold transition cursor-pointer text-gray-500 hover:text-gray-900" data-status="Paid">Paid</button>
+      <button type="button" class="status-tab-btn px-2.5 py-1 rounded-md font-semibold transition cursor-pointer text-gray-500 hover:text-gray-900" data-status="Overdue">Overdue</button>
+      <button type="button" class="status-tab-btn px-2.5 py-1 rounded-md font-semibold transition cursor-pointer text-gray-500 hover:text-gray-900" data-status="Draft">Draft</button>
+    </div>
+
+    <!-- Modal Content: Scrollable List -->
+    <div class="p-6 overflow-y-auto flex-1 space-y-3" id="saved-invoices-list">
+      <!-- Dynamically generated list items -->
+    </div>
+
+    <!-- Empty State -->
+    <div id="saved-invoices-empty" class="hidden p-12 text-center text-gray-500">
+      <div class="w-12 h-12 rounded-full bg-gray-100 text-gray-400 flex items-center justify-center mx-auto mb-3">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path><line x1="9" x2="15" y1="13" y2="13"></line></svg>
+      </div>
+      <p class="text-sm font-semibold text-gray-700 mb-1">No Saved Invoices Found</p>
+      <p class="text-xs text-gray-400 max-w-sm mx-auto mb-4">You haven't saved any invoices yet. Create an invoice and click "Save Invoice" to access it here anytime.</p>
+    </div>
+
+    <!-- Modal Footer -->
+    <div class="px-6 py-3.5 border-t border-gray-100 bg-gray-50/50 flex flex-wrap items-center justify-between gap-3">
+      <button 
+        type="button" 
+        id="btn-clear-all-saved" 
+        class="text-xs font-semibold text-red-600 hover:text-red-700 hover:bg-red-50 px-2.5 py-1.5 rounded-lg transition-colors cursor-pointer flex items-center gap-1"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+        <span>Clear All Invoices</span>
+      </button>
+
+      <div class="flex items-center gap-2">
+        <button 
+          type="button" 
+          id="btn-modal-new-invoice" 
+          class="bg-primary hover:bg-[#037851] text-white text-xs font-bold px-3.5 py-1.5 rounded-lg transition-colors shadow-xs cursor-pointer flex items-center gap-1"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"></path><path d="M12 5v14"></path></svg>
+          <span>New Invoice</span>
+        </button>
+        <button 
+          type="button" 
+          id="btn-modal-close" 
+          class="bg-white border border-gray-200 text-gray-700 hover:bg-gray-100 text-xs font-semibold px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+        >
+          Close
+        </button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST NOTIFICATION (Hidden on Print) -->
+<div 
+  id="invoice-toast" 
+  class="fixed bottom-6 right-6 z-50 bg-gray-900 text-white px-4 py-3 rounded-xl shadow-xl flex items-center gap-2.5 text-xs font-medium transform transition-all duration-300 opacity-0 pointer-events-none translate-y-3 no-print max-w-sm"
+>
+  <div id="toast-icon" class="text-emerald-400 shrink-0">
+    <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>
+  </div>
+  <span id="toast-message" class="flex-1 leading-snug">Invoice saved successfully!</span>
+</div>
+
+<!-- CLIENT SIDE JAVASCRIPT CONTROLLER -->
+<script is:inline>
+  // Wait for the DOM to load
+  document.addEventListener('DOMContentLoaded', () => {
+    
+    // Core state selectors
+    const selectors = {
+      invNumber: { input: 'input-inv-number', preview: 'preview-inv-number' },
+      status: { input: 'input-status', preview: 'preview-status-badge' },
+      currency: { input: 'input-currency', preview: 'preview-subtotal' },
+      customCurrency: 'input-custom-currency',
+      customCurrencyContainer: 'custom-currency-container',
+      dateIssue: { input: 'input-date-issue', preview: 'preview-date-issue' },
+      dateDue: { input: 'input-date-due', preview: 'preview-date-due' },
+      fromCompany: { input: 'input-from-company', preview: 'preview-from-company' },
+      fromName: { input: 'input-from-name', preview: 'preview-from-name' },
+      fromEmail: { input: 'input-from-email', preview: 'preview-from-address' },
+      fromAddress: { input: 'input-from-address', preview: 'preview-from-address' },
+      toCompany: { input: 'input-to-company', preview: 'preview-to-company' },
+      toName: { input: 'input-to-name', preview: 'preview-to-name' },
+      toEmail: { input: 'input-to-email', preview: 'preview-to-email' },
+      toAddress: { input: 'input-to-address', preview: 'preview-to-address' },
+      taxRate: 'input-tax',
+      discountRate: 'input-discount',
+      shippingCost: 'input-shipping',
+      notes: { input: 'input-notes', preview: 'preview-notes' },
+      logoInput: 'input-logo',
+      logoUploadBtn: 'btn-upload-logo',
+      logoRemoveBtn: 'btn-remove-logo',
+      logoPreview: 'logo-preview',
+      logoPlaceholder: 'logo-placeholder',
+      logoSheetContainer: 'preview-logo-container',
+      logoSheetImg: 'preview-logo',
+      lineItemsContainer: 'editor-line-items-container',
+      addLineItemBtn: 'btn-add-item',
+      printBtn: 'btn-print-invoice',
+      resetBtn: 'btn-reset',
+      // Invoice storage and management selectors
+      btnSaveInvoice: 'btn-save-invoice',
+      btnQuickSave: 'btn-quick-save',
+      btnNewInvoice: 'btn-new-invoice',
+      btnOpenSavedModal: 'btn-open-saved-modal',
+      btnCloseSavedModal: 'btn-close-saved-modal',
+      btnModalClose: 'btn-modal-close',
+      btnModalNewInvoice: 'btn-modal-new-invoice',
+      btnClearAllSaved: 'btn-clear-all-saved',
+      btnUnlinkInvoice: 'btn-unlink-invoice',
+      savedSearchInput: 'saved-search-input',
+      savedInvoicesModal: 'saved-invoices-modal'
+    };
+
+    // Storage keys configuration
+    const STORAGE_KEYS = {
+      SAVED_INVOICES: 'quinvy_saved_invoices',
+      ACTIVE_ID: 'quinvy_active_invoice_id',
+      DRAFT: 'quinvy_invoice_draft',
+      TEMPLATE: 'quinvy_invoice_template'
+    };
+
+    // Default template data (starts completely empty)
+    const defaults = {
+      invNumber: '',
+      status: 'Pending',
+      currency: '$',
+      customCurrency: '',
+      dateIssue: '',
+      dateDue: '',
+      fromCompany: '',
+      fromName: '',
+      fromEmail: '',
+      fromAddress: '',
+      toCompany: '',
+      toName: '',
+      toEmail: '',
+      toAddress: '',
+      taxRate: 0,
+      discountRate: 0,
+      shippingCost: 0,
+      notes: '',
+      logo: '',
+      accentColor: '#048c5f',
+      items: []
+    };
+
+    // Helper functions for DOM bindings
+    const getEl = (id) => document.getElementById(id);
+
+    // Escape special HTML characters
+    function escapeHtml(str) {
+      if (!str) return '';
+      return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+    }
+
+    // Format relative time helper
+    function timeAgo(timestamp) {
+      if (!timestamp) return 'Just now';
+      const diff = Math.floor((Date.now() - timestamp) / 1000);
+      if (diff < 60) return 'Just now';
+      if (diff < 3600) return `${Math.floor(diff / 60)}m ago`;
+      if (diff < 86400) return `${Math.floor(diff / 3600)}h ago`;
+      const d = new Date(timestamp);
+      return d.toLocaleDateString();
+    }
+
+    // Status visual styles configuration
+    function getStatusBadgeConfig(status) {
+      switch (status) {
+        case 'Paid':
+          return {
+            classes: 'bg-emerald-50 text-emerald-700 border-emerald-300',
+            dotClass: 'bg-emerald-500',
+            label: 'Paid'
+          };
+        case 'Overdue':
+          return {
+            classes: 'bg-rose-50 text-rose-700 border-rose-300',
+            dotClass: 'bg-rose-500',
+            label: 'Overdue'
+          };
+        case 'Draft':
+          return {
+            classes: 'bg-gray-100 text-gray-700 border-gray-300',
+            dotClass: 'bg-gray-400',
+            label: 'Draft'
+          };
+        case 'Pending':
+        default:
+          return {
+            classes: 'bg-amber-50 text-amber-700 border-amber-300',
+            dotClass: 'bg-amber-400',
+            label: 'Pending'
+          };
+      }
+    }
+
+    // Update status badge UI in toolbar and live preview sheet
+    function updateStatusUI(status) {
+      const currentStatus = status || getEl(selectors.status.input)?.value || 'Pending';
+      const config = getStatusBadgeConfig(currentStatus);
+
+      // Update active toolbar badge
+      const activeBadge = getEl('active-inv-status-badge');
+      if (activeBadge) {
+        activeBadge.className = `px-2 py-0.5 rounded-full text-xxs font-extrabold uppercase border ${config.classes}`;
+        activeBadge.textContent = config.label;
+      }
+
+      // Update live preview sheet badge
+      const previewBadge = getEl(selectors.status.preview);
+      if (previewBadge) {
+        previewBadge.className = `px-2.5 py-0.5 rounded-full text-xxs font-extrabold uppercase tracking-wider border ${config.classes}`;
+        previewBadge.textContent = config.label;
+      }
+    }
+    
+    // Core calculation and preview rendering functions
+    function formatMoney(amount, symbol) {
+      const val = parseFloat(amount) || 0;
+      return `${symbol}${val.toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`;
+    }
+
+    // Get current currency symbol
+    function getCurrencySymbol() {
+      const select = getEl(selectors.currency.input);
+      if (select && select.value === 'custom') {
+        return getEl(selectors.customCurrency)?.value || '';
+      }
+      return select ? select.value : '$';
+    }
+
+    // Calculate totals and render corresponding fields
+    function calculateInvoice() {
+      const symbol = getCurrencySymbol();
+      let subtotal = 0;
+      
+      // Update all editor currency symbols
+      document.querySelectorAll('.currency-symbol-label').forEach(el => {
+        el.textContent = symbol;
+      });
+      
+      // Calculate each line item sum
+      const rows = getEl(selectors.lineItemsContainer)?.children || [];
+      const previewBody = getEl('preview-table-body');
+      if (previewBody) previewBody.innerHTML = '';
+
+      Array.from(rows).forEach((row) => {
+        const desc = row.querySelector('.item-desc')?.value || '';
+        const qty = parseFloat(row.querySelector('.item-qty')?.value) || 0;
+        const rate = parseFloat(row.querySelector('.item-rate')?.value) || 0;
+        const amount = qty * rate;
+        subtotal += amount;
+
+        // Update read-only amount input in form
+        const amountSpan = row.querySelector('.item-amount-span');
+        if (amountSpan) amountSpan.textContent = formatMoney(amount, symbol);
+
+        // Append to preview table
+        if (previewBody) {
+          const tr = document.createElement('tr');
+          tr.className = 'border-b border-gray-100';
+          tr.innerHTML = `
+            <td class="py-3 text-gray-900 font-medium whitespace-pre-wrap">${escapeHtml(desc) || 'Untitled Item'}</td>
+            <td class="py-3 text-right text-gray-600">${qty}</td>
+            <td class="py-3 text-right text-gray-600">${formatMoney(rate, symbol)}</td>
+            <td class="py-3 text-right text-gray-900 font-bold">${formatMoney(amount, symbol)}</td>
+          `;
+          previewBody.appendChild(tr);
+        }
+      });
+
+      // Subtotal display
+      const subtotalEl = getEl('preview-subtotal');
+      if (subtotalEl) subtotalEl.textContent = formatMoney(subtotal, symbol);
+
+      // Tax calculation
+      const taxRate = parseFloat(getEl(selectors.taxRate)?.value) || 0;
+      const taxAmount = (subtotal * taxRate) / 100;
+      const taxRow = getEl('preview-tax-row');
+      if (taxRow) {
+        if (taxRate > 0) {
+          taxRow.classList.remove('hidden');
+          getEl('preview-tax-label').textContent = `Tax (${taxRate}%)`;
+          getEl('preview-tax-value').textContent = formatMoney(taxAmount, symbol);
+        } else {
+          taxRow.classList.add('hidden');
+        }
+      }
+
+      // Discount calculation
+      const discountRate = parseFloat(getEl(selectors.discountRate)?.value) || 0;
+      const discountAmount = (subtotal * discountRate) / 100;
+      const discountRow = getEl('preview-discount-row');
+      if (discountRow) {
+        if (discountRate > 0) {
+          discountRow.classList.remove('hidden');
+          getEl('preview-discount-label').textContent = `Discount (-${discountRate}%)`;
+          getEl('preview-discount-value').textContent = `-${formatMoney(discountAmount, symbol)}`;
+        } else {
+          discountRow.classList.add('hidden');
+        }
+      }
+
+      // Shipping cost
+      const shipping = parseFloat(getEl(selectors.shippingCost)?.value) || 0;
+      const shippingRow = getEl('preview-shipping-row');
+      if (shippingRow) {
+        if (shipping > 0) {
+          shippingRow.classList.remove('hidden');
+          getEl('preview-shipping-value').textContent = formatMoney(shipping, symbol);
+        } else {
+          shippingRow.classList.add('hidden');
+        }
+      }
+
+      // Grand total
+      const total = subtotal + taxAmount - discountAmount + shipping;
+      const totalEl = getEl('preview-total');
+      if (totalEl) totalEl.textContent = formatMoney(total, symbol);
+    }
+
+    // Add a line item to the form editor
+    function addLineItem(desc = '', qty = 1, rate = 0) {
+      const container = getEl(selectors.lineItemsContainer);
+      if (!container) return;
+      const rowId = `item-row-${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+      const symbol = getCurrencySymbol();
+      
+      const itemRow = document.createElement('div');
+      itemRow.className = 'grid grid-cols-12 gap-3 items-center border border-gray-100 p-3 rounded-lg relative group bg-gray-50/50';
+      itemRow.id = rowId;
+
+      itemRow.innerHTML = `
+        <div class="col-span-12 sm:col-span-6">
+          <label class="block text-xxs font-bold uppercase text-gray-400 mb-0.5 sm:hidden">Description</label>
+          <input type="text" class="item-desc w-full bg-white border border-gray-200 rounded px-2.5 py-1.5 text-xs focus:outline-none focus:border-primary" placeholder="Description" value="${escapeHtml(desc)}" />
+        </div>
+        <div class="col-span-4 sm:col-span-2">
+          <label class="block text-xxs font-bold uppercase text-gray-400 mb-0.5 sm:hidden">Qty</label>
+          <input type="number" class="item-qty w-full bg-white border border-gray-200 rounded px-2.5 py-1.5 text-xs text-right focus:outline-none focus:border-primary" placeholder="0" min="0" step="any" value="${qty}" />
+        </div>
+        <div class="col-span-4 sm:col-span-2">
+          <label class="block text-xxs font-bold uppercase text-gray-400 mb-0.5 sm:hidden">Rate</label>
+          <div class="relative flex items-center">
+            <span class="absolute left-2.5 text-xxs font-bold text-gray-400 currency-symbol-label">${symbol}</span>
+            <input type="number" class="item-rate w-full bg-white border border-gray-200 rounded pl-7 pr-2.5 py-1.5 text-xs text-right focus:outline-none focus:border-primary" placeholder="0.00" min="0" step="any" value="${rate}" />
+          </div>
+        </div>
+        <div class="col-span-3 sm:col-span-2 text-right">
+          <label class="block text-xxs font-bold uppercase text-gray-400 mb-0.5 sm:hidden">Amount</label>
+          <span class="item-amount-span text-xs font-bold text-gray-900">0.00</span>
+        </div>
+        <button type="button" class="btn-delete-row absolute -right-2.5 -top-2.5 bg-red-100 hover:bg-red-200 text-red-600 rounded-full w-5 h-5 flex items-center justify-center text-xxs shadow opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer" title="Remove line item">
+          &times;
+        </button>
+      `;
+
+      // Set up individual line item triggers
+      itemRow.querySelector('.item-desc')?.addEventListener('keyup', calculateInvoice);
+      itemRow.querySelector('.item-qty')?.addEventListener('keyup', calculateInvoice);
+      itemRow.querySelector('.item-qty')?.addEventListener('change', calculateInvoice);
+      itemRow.querySelector('.item-rate')?.addEventListener('keyup', calculateInvoice);
+      itemRow.querySelector('.item-rate')?.addEventListener('change', calculateInvoice);
+      
+      // Delete event handler
+      itemRow.querySelector('.btn-delete-row')?.addEventListener('click', () => {
+        itemRow.remove();
+        calculateInvoice();
+        saveDraft();
+      });
+
+      container.appendChild(itemRow);
+      calculateInvoice();
+    }
+
+    // File uploading process
+    function setupLogoHandling() {
+      const fileInput = getEl(selectors.logoInput);
+      const uploadBtn = getEl(selectors.logoUploadBtn);
+      const removeBtn = getEl(selectors.logoRemoveBtn);
+      if (!fileInput || !uploadBtn) return;
+
+      uploadBtn.addEventListener('click', () => fileInput.click());
+
+      fileInput.addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        if (file.size > 1.5 * 1024 * 1024) {
+          alert("Logo size exceeds 1.5MB. Please upload a smaller image file.");
+          return;
+        }
+
+        const reader = new FileReader();
+        reader.onload = (event) => {
+          const base64 = event.target.result;
+          displayLogo(base64);
+          saveDraft();
+        };
+        reader.readAsDataURL(file);
+      });
+
+      removeBtn?.addEventListener('click', () => {
+        displayLogo('');
+        saveDraft();
+      });
+    }
+
+    // Logo display state toggle
+    function displayLogo(base64) {
+      const previewImg = getEl(selectors.logoPreview);
+      const placeholder = getEl(selectors.logoPlaceholder);
+      const removeBtn = getEl(selectors.logoRemoveBtn);
+      const sheetContainer = getEl(selectors.logoSheetContainer);
+      const sheetImg = getEl(selectors.logoSheetImg);
+
+      if (base64 && base64.startsWith('data:')) {
+        if (previewImg) {
+          previewImg.src = base64;
+          previewImg.classList.remove('hidden');
+        }
+        if (placeholder) placeholder.classList.add('hidden');
+        if (removeBtn) removeBtn.classList.remove('hidden');
+
+        if (sheetImg) sheetImg.src = base64;
+        if (sheetContainer) {
+          sheetContainer.classList.remove('hidden');
+          sheetContainer.classList.add('flex');
+        }
+      } else {
+        if (previewImg) {
+          previewImg.removeAttribute('src');
+          previewImg.classList.add('hidden');
+        }
+        if (placeholder) placeholder.classList.remove('hidden');
+        if (removeBtn) removeBtn.classList.add('hidden');
+
+        if (sheetImg) sheetImg.removeAttribute('src');
+        if (sheetContainer) {
+          sheetContainer.classList.add('hidden');
+          sheetContainer.classList.remove('flex');
+        }
+        const fileIn = getEl(selectors.logoInput);
+        if (fileIn) fileIn.value = '';
+      }
+    }
+
+    // Extract current complete state of the invoice
+    function getInvoiceState() {
+      const state = {
+        invNumber: getEl(selectors.invNumber.input)?.value || '',
+        status: getEl(selectors.status.input)?.value || 'Pending',
+        currency: getEl(selectors.currency.input)?.value || '$',
+        customCurrency: getEl(selectors.customCurrency)?.value || '',
+        dateIssue: getEl(selectors.dateIssue.input)?.value || '',
+        dateDue: getEl(selectors.dateDue.input)?.value || '',
+        fromCompany: getEl(selectors.fromCompany.input)?.value || '',
+        fromName: getEl(selectors.fromName.input)?.value || '',
+        fromEmail: getEl(selectors.fromEmail.input)?.value || '',
+        fromAddress: getEl(selectors.fromAddress.input)?.value || '',
+        toCompany: getEl(selectors.toCompany.input)?.value || '',
+        toName: getEl(selectors.toName.input)?.value || '',
+        toEmail: getEl(selectors.toEmail.input)?.value || '',
+        toAddress: getEl(selectors.toAddress.input)?.value || '',
+        taxRate: parseFloat(getEl(selectors.taxRate)?.value) || 0,
+        discountRate: parseFloat(getEl(selectors.discountRate)?.value) || 0,
+        shippingCost: parseFloat(getEl(selectors.shippingCost)?.value) || 0,
+        notes: getEl(selectors.notes.input)?.value || '',
+        logo: getEl(selectors.logoPreview)?.getAttribute('src') || '',
+        accentColor: getEl('input-accent-color')?.value || '#048c5f',
+        template: localStorage.getItem(STORAGE_KEYS.TEMPLATE) || 'minimal',
+        items: []
+      };
+
+      const rows = getEl(selectors.lineItemsContainer)?.children || [];
+      Array.from(rows).forEach(row => {
+        state.items.push({
+          desc: row.querySelector('.item-desc')?.value || '',
+          qty: parseFloat(row.querySelector('.item-qty')?.value) || 0,
+          rate: parseFloat(row.querySelector('.item-rate')?.value) || 0
+        });
+      });
+
+      return state;
+    }
+
+    // Extract summary metadata for listing saved invoices
+    function getCurrentInvoiceSummary() {
+      const invNumber = getEl(selectors.invNumber.input)?.value.trim() || 'Untitled Invoice';
+      const status = getEl(selectors.status.input)?.value || 'Pending';
+      const toCompany = getEl(selectors.toCompany.input)?.value.trim() || '';
+      const toName = getEl(selectors.toName.input)?.value.trim() || '';
+      const clientName = toCompany || toName || 'Unspecified Client';
+      const fromCompany = getEl(selectors.fromCompany.input)?.value.trim() || '';
+      const fromName = getEl(selectors.fromName.input)?.value.trim() || '';
+      const senderName = fromCompany || fromName || '';
+      const dateIssue = getEl(selectors.dateIssue.input)?.value || '';
+      const dateDue = getEl(selectors.dateDue.input)?.value || '';
+      const symbol = getCurrencySymbol();
+      
+      const rows = getEl(selectors.lineItemsContainer)?.children || [];
+      let subtotal = 0;
+      Array.from(rows).forEach(row => {
+        const qty = parseFloat(row.querySelector('.item-qty')?.value) || 0;
+        const rate = parseFloat(row.querySelector('.item-rate')?.value) || 0;
+        subtotal += qty * rate;
+      });
+
+      const taxRate = parseFloat(getEl(selectors.taxRate)?.value) || 0;
+      const taxAmount = (subtotal * taxRate) / 100;
+      const discountRate = parseFloat(getEl(selectors.discountRate)?.value) || 0;
+      const discountAmount = (subtotal * discountRate) / 100;
+      const shipping = parseFloat(getEl(selectors.shippingCost)?.value) || 0;
+      const total = subtotal + taxAmount - discountAmount + shipping;
+
+      return {
+        invNumber,
+        status,
+        clientName,
+        senderName,
+        dateIssue,
+        dateDue,
+        currency: symbol,
+        total,
+        totalFormatted: formatMoney(total, symbol),
+        itemsCount: rows.length
+      };
+    }
+
+    // Read saved invoices list from localStorage
+    function getSavedInvoices() {
+      try {
+        const raw = localStorage.getItem(STORAGE_KEYS.SAVED_INVOICES);
+        return raw ? JSON.parse(raw) : [];
+      } catch (e) {
+        console.error('Failed reading saved invoices:', e);
+        return [];
+      }
+    }
+
+    // Persist saved invoices list to localStorage
+    function saveInvoicesList(list) {
+      try {
+        localStorage.setItem(STORAGE_KEYS.SAVED_INVOICES, JSON.stringify(list));
+      } catch (e) {
+        console.error('Failed saving invoices list:', e);
+      }
+    }
+
+    // Get active invoice ID being edited
+    function getActiveInvoiceId() {
+      return localStorage.getItem(STORAGE_KEYS.ACTIVE_ID) || null;
+    }
+
+    // Set active invoice ID
+    function setActiveInvoiceId(id) {
+      if (id) {
+        localStorage.setItem(STORAGE_KEYS.ACTIVE_ID, id);
+      } else {
+        localStorage.removeItem(STORAGE_KEYS.ACTIVE_ID);
+      }
+    }
+
+    // Toast notification display helper
+    let toastTimeout = null;
+    function showToast(message, isError = false) {
+      const toast = getEl('invoice-toast');
+      const msgEl = getEl('toast-message');
+      const iconEl = getEl('toast-icon');
+      if (!toast || !msgEl) return;
+
+      msgEl.textContent = message;
+      if (isError) {
+        toast.classList.remove('bg-gray-900');
+        toast.classList.add('bg-red-900');
+        if (iconEl) iconEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="12" x2="12" y1="8" y2="12"></line><line x1="12" x2="12.01" y1="16" y2="16"></line></svg>';
+      } else {
+        toast.classList.remove('bg-red-900');
+        toast.classList.add('bg-gray-900');
+        if (iconEl) iconEl.innerHTML = '<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6 9 17l-5-5"></path></svg>';
+      }
+
+      toast.classList.remove('opacity-0', 'pointer-events-none', 'translate-y-3');
+      toast.classList.add('opacity-100', 'translate-y-0');
+
+      if (toastTimeout) clearTimeout(toastTimeout);
+      toastTimeout = setTimeout(() => {
+        toast.classList.add('opacity-0', 'pointer-events-none', 'translate-y-3');
+        toast.classList.remove('opacity-100', 'translate-y-0');
+      }, 3000);
+    }
+
+    // Save working state in draft cache
+    function saveDraft() {
+      const state = getInvoiceState();
+      try {
+        localStorage.setItem(STORAGE_KEYS.DRAFT, JSON.stringify(state));
+      } catch (e) {
+        console.error('Failed saving draft:', e);
+      }
+      
+      const activeId = getActiveInvoiceId();
+      if (activeId) {
+        const titleEl = getEl('active-inv-badge-title');
+        const invNum = state.invNumber.trim() || 'Untitled Invoice';
+        if (titleEl) titleEl.textContent = invNum;
+        const lastSavedEl = getEl('active-inv-last-saved');
+        if (lastSavedEl) lastSavedEl.textContent = 'Unsaved changes • Click Update';
+      }
+    }
+
+    // Save or update invoice into localStorage
+    function saveCurrentInvoice(forceNew = false) {
+      const state = getInvoiceState();
+      const summary = getCurrentInvoiceSummary();
+      const savedInvoices = getSavedInvoices();
+      let activeId = getActiveInvoiceId();
+      const now = Date.now();
+
+      const isExisting = !forceNew && activeId && savedInvoices.some(inv => inv.id === activeId);
+
+      if (isExisting) {
+        // Update existing invoice record
+        const index = savedInvoices.findIndex(inv => inv.id === activeId);
+        savedInvoices[index] = {
+          ...savedInvoices[index],
+          ...summary,
+          updatedAt: now,
+          data: state
+        };
+        saveInvoicesList(savedInvoices);
+        showToast(`Invoice "${summary.invNumber}" updated!`);
+      } else {
+        // Create new invoice record
+        const newId = `inv_${now}_${Math.random().toString(36).substring(2, 8)}`;
+        const newRecord = {
+          id: newId,
+          ...summary,
+          createdAt: now,
+          updatedAt: now,
+          data: state
+        };
+        savedInvoices.unshift(newRecord);
+        saveInvoicesList(savedInvoices);
+        setActiveInvoiceId(newId);
+        showToast(`Invoice "${summary.invNumber}" saved!`);
+      }
+
+      // Also persist to current working draft
+      localStorage.setItem(STORAGE_KEYS.DRAFT, JSON.stringify(state));
+      updateToolbarUI();
+    }
+
+    // Update top toolbar and badge indicators
+    function updateToolbarUI() {
+      const activeId = getActiveInvoiceId();
+      const savedInvoices = getSavedInvoices();
+      const badgeEl = getEl('saved-invoices-count-badge');
+      const modalCountEl = getEl('saved-modal-count-text');
+      const titleEl = getEl('active-inv-badge-title');
+      const lastSavedEl = getEl('active-inv-last-saved');
+      const dotEl = getEl('status-indicator-dot');
+      const unlinkBtn = getEl('btn-unlink-invoice');
+      const saveBtnText = getEl('btn-save-text');
+      const quickSaveText = getEl('btn-quick-save-text');
+
+      if (badgeEl) badgeEl.textContent = String(savedInvoices.length);
+      if (modalCountEl) modalCountEl.textContent = `${savedInvoices.length} invoice${savedInvoices.length === 1 ? '' : 's'}`;
+
+      const activeInv = activeId ? savedInvoices.find(inv => inv.id === activeId) : null;
+
+      if (activeInv) {
+        if (titleEl) titleEl.textContent = activeInv.invNumber || 'Untitled Invoice';
+        if (lastSavedEl) lastSavedEl.textContent = `Saved • Updated ${timeAgo(activeInv.updatedAt)}`;
+        if (dotEl) {
+          dotEl.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 shrink-0';
+        }
+        if (unlinkBtn) unlinkBtn.classList.remove('hidden');
+        if (saveBtnText) saveBtnText.textContent = 'Update Invoice';
+        if (quickSaveText) quickSaveText.textContent = 'Update';
+      } else {
+        const currentNum = getEl(selectors.invNumber.input)?.value.trim();
+        if (titleEl) titleEl.textContent = currentNum || 'New Draft';
+        if (lastSavedEl) lastSavedEl.textContent = 'Unsaved in LocalStorage';
+        if (dotEl) {
+          dotEl.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 shrink-0';
+        }
+        if (unlinkBtn) unlinkBtn.classList.add('hidden');
+        if (saveBtnText) saveBtnText.textContent = 'Save Invoice';
+        if (quickSaveText) quickSaveText.textContent = 'Save';
+      }
+
+      // Sync status indicators
+      updateStatusUI(getEl(selectors.status.input)?.value);
+    }
+
+    // Unlink active invoice so further edits save as a new invoice
+    function unlinkActiveInvoice() {
+      setActiveInvoiceId(null);
+      updateToolbarUI();
+      showToast('Unlinked from saved invoice. Further saves will create a new copy.');
+    }
+
+    // Load an invoice by ID into the editor form
+    function loadInvoiceById(id) {
+      const savedInvoices = getSavedInvoices();
+      const target = savedInvoices.find(inv => inv.id === id);
+      if (!target) return;
+
+      setActiveInvoiceId(target.id);
+      loadInvoiceData(target.data);
+      closeSavedModal();
+      updateToolbarUI();
+      showToast(`Loaded invoice "${target.invNumber}"!`);
+    }
+
+    // Duplicate an invoice by ID
+    function duplicateInvoiceById(id) {
+      const savedInvoices = getSavedInvoices();
+      const target = savedInvoices.find(inv => inv.id === id);
+      if (!target) return;
+
+      const now = Date.now();
+      const newId = `inv_${now}_${Math.random().toString(36).substring(2, 8)}`;
+      const clonedData = JSON.parse(JSON.stringify(target.data));
+      const newNumber = target.invNumber ? `${target.invNumber} (Copy)` : 'INV-Copy';
+      clonedData.invNumber = newNumber;
+
+      const newRecord = {
+        ...target,
+        id: newId,
+        invNumber: newNumber,
+        createdAt: now,
+        updatedAt: now,
+        data: clonedData
+      };
+
+      savedInvoices.unshift(newRecord);
+      saveInvoicesList(savedInvoices);
+
+      loadInvoiceById(newId);
+      showToast(`Duplicated as "${newNumber}"!`);
+    }
+
+    // Delete an invoice by ID
+    function deleteInvoiceById(id) {
+      const savedInvoices = getSavedInvoices();
+      const target = savedInvoices.find(inv => inv.id === id);
+      if (!target) return;
+
+      const confirmed = confirm(`Are you sure you want to delete invoice "${target.invNumber}"? This cannot be undone.`);
+      if (!confirmed) return;
+
+      const updatedList = savedInvoices.filter(inv => inv.id !== id);
+      saveInvoicesList(updatedList);
+
+      if (getActiveInvoiceId() === id) {
+        setActiveInvoiceId(null);
+      }
+
+      renderSavedInvoicesModal(getEl(selectors.savedSearchInput)?.value || '');
+      updateToolbarUI();
+      showToast(`Invoice "${target.invNumber}" deleted.`);
+    }
+
+    // Clear all saved invoices with confirmation
+    function clearAllSavedInvoices() {
+      const savedInvoices = getSavedInvoices();
+      if (savedInvoices.length === 0) {
+        alert('There are no saved invoices to clear.');
+        return;
+      }
+
+      const confirmed = confirm(`Are you sure you want to permanently delete all ${savedInvoices.length} saved invoices? This cannot be undone.`);
+      if (!confirmed) return;
+
+      saveInvoicesList([]);
+      setActiveInvoiceId(null);
+      renderSavedInvoicesModal();
+      updateToolbarUI();
+      showToast('All saved invoices have been cleared.');
+    }
+
+    // Create a new blank invoice
+    function createNewBlankInvoice() {
+      const confirmed = confirm('Start a new blank invoice? Current unsaved edits will be cleared.');
+      if (!confirmed) return;
+
+      setActiveInvoiceId(null);
+      localStorage.removeItem(STORAGE_KEYS.DRAFT);
+      loadInvoiceData(defaults);
+      closeSavedModal();
+      updateToolbarUI();
+      showToast('New blank invoice ready.');
+    }
+
+    // Active status filter state for saved modal
+    let currentStatusFilter = 'all';
+
+    // Render list inside Saved Invoices modal
+    function renderSavedInvoicesModal(query = '') {
+      const listEl = getEl('saved-invoices-list');
+      const emptyEl = getEl('saved-invoices-empty');
+      const countText = getEl('saved-modal-count-text');
+      const savedInvoices = getSavedInvoices();
+      const activeId = getActiveInvoiceId();
+
+      const q = (query || '').toLowerCase().trim();
+      const filtered = savedInvoices.filter(inv => {
+        const invStatus = inv.status || inv.data?.status || 'Pending';
+        if (currentStatusFilter !== 'all' && invStatus.toLowerCase() !== currentStatusFilter.toLowerCase()) {
+          return false;
+        }
+        if (!q) return true;
+        const invNum = (inv.invNumber || '').toLowerCase();
+        const client = (inv.clientName || '').toLowerCase();
+        const sender = (inv.senderName || '').toLowerCase();
+        const date = (inv.dateIssue || '').toLowerCase();
+        const statusText = invStatus.toLowerCase();
+        return invNum.includes(q) || client.includes(q) || sender.includes(q) || date.includes(q) || statusText.includes(q);
+      });
+
+      if (countText) {
+        countText.textContent = `${filtered.length} of ${savedInvoices.length} invoice${savedInvoices.length === 1 ? '' : 's'}`;
+      }
+
+      if (savedInvoices.length === 0) {
+        if (listEl) listEl.innerHTML = '';
+        if (emptyEl) {
+          emptyEl.classList.remove('hidden');
+          emptyEl.querySelector('p').textContent = 'No Saved Invoices Found';
+        }
+        return;
+      }
+
+      if (filtered.length === 0) {
+        if (listEl) listEl.innerHTML = '';
+        if (emptyEl) {
+          emptyEl.classList.remove('hidden');
+          emptyEl.querySelector('p').textContent = 'No matching invoices found.';
+        }
+        return;
+      }
+
+      if (emptyEl) emptyEl.classList.add('hidden');
+      if (!listEl) return;
+
+      listEl.innerHTML = filtered.map(inv => {
+        const isActive = inv.id === activeId;
+        const invStatus = inv.status || inv.data?.status || 'Pending';
+        const statusConfig = getStatusBadgeConfig(invStatus);
+
+        return `
+          <div class="border ${isActive ? 'border-emerald-300 bg-emerald-50/40' : 'border-gray-200 bg-white'} rounded-xl p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 hover:border-gray-300 transition shadow-xs">
+            <div class="min-w-0 flex-1">
+              <div class="flex items-center gap-2 mb-1 flex-wrap">
+                <span class="font-extrabold text-sm text-gray-900">${escapeHtml(inv.invNumber || 'Untitled Invoice')}</span>
+                <span class="px-2 py-0.5 rounded-full text-xxs font-extrabold uppercase border ${statusConfig.classes}">
+                  ${escapeHtml(invStatus)}
+                </span>
+                ${isActive ? '<span class="bg-emerald-100 text-emerald-800 border border-emerald-300 text-xxs font-bold px-2 py-0.5 rounded-full flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>Active in Editor</span>' : ''}
+              </div>
+              <div class="text-xs text-gray-500 space-y-0.5">
+                <p><span class="font-medium text-gray-700">Client:</span> ${escapeHtml(inv.clientName || 'Unspecified')}</p>
+                <p class="text-xxs text-gray-400">Date: ${inv.dateIssue || '-'} • ${inv.itemsCount || 0} item${inv.itemsCount === 1 ? '' : 's'} • Updated ${timeAgo(inv.updatedAt)}</p>
+              </div>
+            </div>
+            
+            <div class="flex items-center justify-between sm:justify-end gap-3 pt-2 sm:pt-0 border-t sm:border-t-0 border-gray-100">
+              <div class="text-right">
+                <span class="text-xs text-gray-400 block sm:hidden">Total</span>
+                <span class="font-extrabold text-sm sm:text-base text-gray-900">${escapeHtml(inv.totalFormatted)}</span>
+              </div>
+              
+              <div class="flex items-center gap-1.5">
+                <button 
+                  type="button" 
+                  class="btn-load-inv px-3 py-1.5 ${isActive ? 'bg-emerald-600 text-white' : 'bg-emerald-50 hover:bg-emerald-100 text-primary border border-emerald-200'} rounded-lg text-xs font-bold transition cursor-pointer" 
+                  data-id="${inv.id}"
+                >
+                  ${isActive ? 'Editing' : 'Open'}
+                </button>
+                <button 
+                  type="button" 
+                  class="btn-duplicate-inv p-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition cursor-pointer" 
+                  data-id="${inv.id}" 
+                  title="Duplicate this invoice"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></svg>
+                </button>
+                <button 
+                  type="button" 
+                  class="btn-delete-inv p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition cursor-pointer" 
+                  data-id="${inv.id}" 
+                  title="Delete this invoice"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18"></path><path d="M19 6v14c0 1-1 2-2 2H7c-1 0-2-1-2-2V6"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path></svg>
+                </button>
+              </div>
+            </div>
+          </div>
+        `;
+      }).join('');
+
+      // Attach event listeners to dynamic list buttons
+      listEl.querySelectorAll('.btn-load-inv').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          if (id) loadInvoiceById(id);
+        });
+      });
+
+      listEl.querySelectorAll('.btn-duplicate-inv').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          if (id) duplicateInvoiceById(id);
+        });
+      });
+
+      listEl.querySelectorAll('.btn-delete-inv').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const id = btn.getAttribute('data-id');
+          if (id) deleteInvoiceById(id);
+        });
+      });
+    }
+
+    // Modal open and close handlers
+    function openSavedModal() {
+      const modal = getEl(selectors.savedInvoicesModal);
+      if (!modal) return;
+      currentStatusFilter = 'all';
+      // Reset filter tabs active style
+      document.querySelectorAll('#saved-status-filter-tabs .status-tab-btn').forEach(b => {
+        if (b.getAttribute('data-status') === 'all') {
+          b.className = 'status-tab-btn px-2.5 py-1 rounded-md font-bold transition cursor-pointer bg-white border border-gray-200 text-gray-800 shadow-2xs';
+        } else {
+          b.className = 'status-tab-btn px-2.5 py-1 rounded-md font-semibold transition cursor-pointer text-gray-500 hover:text-gray-900';
+        }
+      });
+      modal.classList.remove('hidden');
+      renderSavedInvoicesModal();
+      const searchInput = getEl(selectors.savedSearchInput);
+      if (searchInput) {
+        searchInput.value = '';
+        searchInput.focus();
+      }
+    }
+
+    function closeSavedModal() {
+      const modal = getEl(selectors.savedInvoicesModal);
+      if (!modal) return;
+      modal.classList.add('hidden');
+    }
+
+    // Loading data into the editor form
+    function loadInvoiceData(customData = null) {
+      let data = defaults;
+      if (customData) {
+        data = customData;
+      } else {
+        // First check if an active saved invoice was loaded
+        const activeId = getActiveInvoiceId();
+        const savedInvoices = getSavedInvoices();
+        const activeInv = activeId ? savedInvoices.find(inv => inv.id === activeId) : null;
+
+        if (activeInv && activeInv.data) {
+          data = activeInv.data;
+        } else {
+          // Check cached draft
+          const cached = localStorage.getItem(STORAGE_KEYS.DRAFT);
+          if (cached) {
+            try {
+              data = JSON.parse(cached);
+            } catch(e) {
+              console.error("Failed parsing invoice draft cache.", e);
+            }
+          }
+        }
+      }
+
+      // Populate form elements
+      getEl(selectors.invNumber.input).value = data.invNumber || '';
+      if (getEl(selectors.status.input)) {
+        getEl(selectors.status.input).value = data.status || 'Pending';
+      }
+      getEl(selectors.currency.input).value = data.currency || '$';
+      getEl(selectors.customCurrency).value = data.customCurrency || '';
+      getEl(selectors.dateIssue.input).value = data.dateIssue || '';
+      getEl(selectors.dateDue.input).value = data.dateDue || '';
+      
+      getEl(selectors.fromCompany.input).value = data.fromCompany || '';
+      getEl(selectors.fromName.input).value = data.fromName || '';
+      getEl(selectors.fromEmail.input).value = data.fromEmail || '';
+      getEl(selectors.fromAddress.input).value = data.fromAddress || '';
+
+      getEl(selectors.toCompany.input).value = data.toCompany || '';
+      getEl(selectors.toName.input).value = data.toName || '';
+      getEl(selectors.toEmail.input).value = data.toEmail || '';
+      getEl(selectors.toAddress.input).value = data.toAddress || '';
+
+      getEl(selectors.taxRate).value = data.taxRate ?? '';
+      getEl(selectors.discountRate).value = data.discountRate ?? '';
+      getEl(selectors.shippingCost).value = data.shippingCost ?? '';
+      getEl(selectors.notes.input).value = data.notes || '';
+
+      // Handle custom currency selection visibility
+      if (data.currency === 'custom') {
+        getEl(selectors.customCurrencyContainer)?.classList.remove('hidden');
+      } else {
+        getEl(selectors.customCurrencyContainer)?.classList.add('hidden');
+      }
+
+      // Display Logo
+      displayLogo(data.logo || '');
+
+      // Render lines
+      const lineContainer = getEl(selectors.lineItemsContainer);
+      if (lineContainer) {
+        lineContainer.innerHTML = '';
+        if (data.items && data.items.length > 0) {
+          data.items.forEach(item => addLineItem(item.desc, item.qty, item.rate));
+        } else {
+          addLineItem('', 1, 0);
+        }
+      }
+
+      // Refresh live preview bindings
+      updateAllTextPreviews();
+      updateStatusUI(data.status || 'Pending');
+      calculateInvoice();
+
+      // Initialize saved template
+      const savedTemplate = data.template || localStorage.getItem(STORAGE_KEYS.TEMPLATE) || 'minimal';
+      setTemplate(savedTemplate);
+
+      // Initialize saved accent color
+      const savedColor = data.accentColor || '#048c5f';
+      const colorInput = getEl('input-accent-color');
+      const hexSpan = getEl('accent-color-hex');
+      if (colorInput) colorInput.value = savedColor;
+      if (hexSpan) hexSpan.textContent = savedColor;
+      applyAccentColor(savedColor);
+
+      updateToolbarUI();
+    }
+
+    // Refresh all text inputs into live previews
+    function updateAllTextPreviews() {
+      const updateProp = (inputId, previewId, processFn = null) => {
+        const input = getEl(inputId);
+        const preview = getEl(previewId);
+        if (!input || !preview) return;
+        let val = input.value;
+        if (processFn) val = processFn(val);
+        preview.textContent = val || '-';
+      };
+
+      updateProp(selectors.invNumber.input, selectors.invNumber.preview);
+      updateProp(selectors.fromCompany.input, selectors.fromCompany.preview);
+      updateProp(selectors.fromName.input, selectors.fromName.preview);
+      updateProp(selectors.toCompany.input, selectors.toCompany.preview);
+      updateProp(selectors.toName.input, selectors.toName.preview);
+      updateProp(selectors.toEmail.input, selectors.toEmail.preview);
+      updateProp(selectors.toAddress.input, selectors.toAddress.preview);
+      updateProp(selectors.notes.input, selectors.notes.preview);
+
+      updateProp(selectors.dateIssue.input, selectors.dateIssue.preview, (val) => {
+        if (!val) return '';
+        const parts = val.split('-');
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      });
+      updateProp(selectors.dateDue.input, selectors.dateDue.preview, (val) => {
+        if (!val) return '';
+        const parts = val.split('-');
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      });
+
+      // Sender combined address block
+      const address = getEl(selectors.fromAddress.input)?.value || '';
+      const email = getEl(selectors.fromEmail.input)?.value || '';
+      let combined = '';
+      if (address) combined += address;
+      if (email) combined += (combined ? '\n' : '') + email;
+      const fromAddrPreview = getEl(selectors.fromAddress.preview);
+      if (fromAddrPreview) fromAddrPreview.textContent = combined || '-';
+    }
+
+    // Bind textual inputs to live A4 previews
+    function initTextBindings() {
+      const bindProp = (inputId, previewId, processFn = null) => {
+        const input = getEl(inputId);
+        const preview = getEl(previewId);
+        if (!input || !preview) return;
+
+        const update = () => {
+          let val = input.value;
+          if (processFn) val = processFn(val);
+          preview.textContent = val || '-';
+        };
+
+        input.addEventListener('keyup', update);
+        input.addEventListener('change', update);
+      };
+
+      bindProp(selectors.invNumber.input, selectors.invNumber.preview);
+      bindProp(selectors.fromCompany.input, selectors.fromCompany.preview);
+      bindProp(selectors.fromName.input, selectors.fromName.preview);
+      bindProp(selectors.toCompany.input, selectors.toCompany.preview);
+      bindProp(selectors.toName.input, selectors.toName.preview);
+      bindProp(selectors.toEmail.input, selectors.toEmail.preview);
+      bindProp(selectors.toAddress.input, selectors.toAddress.preview);
+      bindProp(selectors.notes.input, selectors.notes.preview);
+
+      bindProp(selectors.dateIssue.input, selectors.dateIssue.preview, (val) => {
+        if (!val) return '';
+        const parts = val.split('-');
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      });
+      bindProp(selectors.dateDue.input, selectors.dateDue.preview, (val) => {
+        if (!val) return '';
+        const parts = val.split('-');
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      });
+
+      const updateFromAddressBlock = () => {
+        const address = getEl(selectors.fromAddress.input)?.value || '';
+        const email = getEl(selectors.fromEmail.input)?.value || '';
+        let combined = '';
+        if (address) combined += address;
+        if (email) combined += (combined ? '\n' : '') + email;
+        const fromAddrPreview = getEl(selectors.fromAddress.preview);
+        if (fromAddrPreview) fromAddrPreview.textContent = combined || '-';
+      };
+      getEl(selectors.fromAddress.input)?.addEventListener('keyup', updateFromAddressBlock);
+      getEl(selectors.fromAddress.input)?.addEventListener('change', updateFromAddressBlock);
+      getEl(selectors.fromEmail.input)?.addEventListener('keyup', updateFromAddressBlock);
+      getEl(selectors.fromEmail.input)?.addEventListener('change', updateFromAddressBlock);
+
+      updateAllTextPreviews();
+    }
+
+    // Set up global triggers and events
+    function setupEventListeners() {
+      // Status selector change handler
+      getEl(selectors.status.input)?.addEventListener('change', (e) => {
+        updateStatusUI(e.target.value);
+        saveDraft();
+      });
+
+      // Status filter tabs in modal
+      document.querySelectorAll('#saved-status-filter-tabs .status-tab-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          currentStatusFilter = btn.getAttribute('data-status') || 'all';
+          
+          // Update active styling of tabs
+          document.querySelectorAll('#saved-status-filter-tabs .status-tab-btn').forEach(b => {
+            if (b === btn) {
+              b.className = 'status-tab-btn px-2.5 py-1 rounded-md font-bold transition cursor-pointer bg-white border border-gray-200 text-gray-800 shadow-2xs';
+            } else {
+              b.className = 'status-tab-btn px-2.5 py-1 rounded-md font-semibold transition cursor-pointer text-gray-500 hover:text-gray-900';
+            }
+          });
+
+          renderSavedInvoicesModal(getEl(selectors.savedSearchInput)?.value || '');
+        });
+      });
+
+      // Currency selectors
+      getEl(selectors.currency.input)?.addEventListener('change', (e) => {
+        if (e.target.value === 'custom') {
+          getEl(selectors.customCurrencyContainer)?.classList.remove('hidden');
+        } else {
+          getEl(selectors.customCurrencyContainer)?.classList.add('hidden');
+        }
+        calculateInvoice();
+        saveDraft();
+      });
+
+      getEl(selectors.customCurrency)?.addEventListener('keyup', () => {
+        calculateInvoice();
+        saveDraft();
+      });
+
+      // Add item triggers
+      getEl(selectors.addLineItemBtn)?.addEventListener('click', () => {
+        addLineItem('', 1, 0);
+        saveDraft();
+      });
+
+      // Summary input calculation bindings
+      getEl(selectors.taxRate)?.addEventListener('keyup', calculateInvoice);
+      getEl(selectors.taxRate)?.addEventListener('change', calculateInvoice);
+      getEl(selectors.discountRate)?.addEventListener('keyup', calculateInvoice);
+      getEl(selectors.discountRate)?.addEventListener('change', calculateInvoice);
+      getEl(selectors.shippingCost)?.addEventListener('keyup', calculateInvoice);
+      getEl(selectors.shippingCost)?.addEventListener('change', calculateInvoice);
+
+      // Global change monitoring for autosaves
+      const formInputs = document.querySelectorAll('.no-print input, .no-print textarea, .no-print select');
+      formInputs.forEach(input => {
+        input.addEventListener('change', saveDraft);
+        input.addEventListener('keyup', saveDraft);
+      });
+
+      // Print action triggers browser native printing
+      getEl(selectors.printBtn)?.addEventListener('click', () => {
+        window.print();
+      });
+
+      // Reset values back to standard empty templates
+      getEl(selectors.resetBtn)?.addEventListener('click', () => {
+        if (confirm("Are you sure you want to reset all current invoice inputs? This will clear the current draft.")) {
+          setActiveInvoiceId(null);
+          localStorage.removeItem(STORAGE_KEYS.DRAFT);
+          loadInvoiceData(defaults);
+          showToast('Form inputs reset.');
+        }
+      });
+
+      // Toolbar Save Buttons
+      getEl(selectors.btnSaveInvoice)?.addEventListener('click', () => saveCurrentInvoice(false));
+      getEl(selectors.btnQuickSave)?.addEventListener('click', () => saveCurrentInvoice(false));
+
+      // New invoice triggers
+      getEl(selectors.btnNewInvoice)?.addEventListener('click', createNewBlankInvoice);
+      getEl(selectors.btnModalNewInvoice)?.addEventListener('click', createNewBlankInvoice);
+
+      // Unlink active invoice trigger
+      getEl(selectors.btnUnlinkInvoice)?.addEventListener('click', unlinkActiveInvoice);
+
+      // Modal open/close triggers
+      getEl(selectors.btnOpenSavedModal)?.addEventListener('click', openSavedModal);
+      getEl(selectors.btnCloseSavedModal)?.addEventListener('click', closeSavedModal);
+      getEl(selectors.btnModalClose)?.addEventListener('click', closeSavedModal);
+      getEl(selectors.btnClearAllSaved)?.addEventListener('click', clearAllSavedInvoices);
+
+      // Modal backdrop click
+      getEl(selectors.savedInvoicesModal)?.addEventListener('click', (e) => {
+        if (e.target === e.currentTarget) closeSavedModal();
+      });
+
+      // Search input inside modal
+      getEl(selectors.savedSearchInput)?.addEventListener('input', (e) => {
+        renderSavedInvoicesModal(e.target.value);
+      });
+
+      // Escape key to close modal
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape') closeSavedModal();
+      });
+
+      // Bind template buttons
+      document.querySelectorAll('.template-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          const tmpl = btn.getAttribute('data-template');
+          setTemplate(tmpl);
+          saveDraft();
+        });
+      });
+
+      // Bind Accent Color Picker
+      getEl('input-accent-color')?.addEventListener('input', (e) => {
+        const val = e.target.value;
+        const hex = getEl('accent-color-hex');
+        if (hex) hex.textContent = val;
+        applyAccentColor(val);
+        saveDraft();
+      });
+    }
+
+    // Dynamic accent color applier
+    function applyAccentColor(hex) {
+      const sheet = getEl('invoice-sheet');
+      if (sheet) {
+        sheet.style.setProperty('--theme-primary', hex);
+      }
+    }
+
+    // Template management helper
+    function setTemplate(templateName) {
+      const sheet = getEl('invoice-sheet');
+      if (!sheet) return;
+      
+      // Remove all theme classes
+      sheet.classList.remove('tpl-minimal', 'tpl-banner', 'tpl-grid', 'tpl-classic', 'tpl-tech');
+      
+      // Add selected theme class
+      sheet.classList.add(`tpl-${templateName}`);
+      
+      // Update buttons active styling
+      document.querySelectorAll('.template-btn').forEach(btn => {
+        if (btn.getAttribute('data-template') === templateName) {
+          btn.classList.add('border-emerald-500', 'bg-emerald-50', 'text-emerald-700', 'shadow-sm');
+          btn.classList.remove('border-gray-200', 'bg-white', 'text-gray-700', 'hover:bg-gray-50');
+        } else {
+          btn.classList.remove('border-emerald-500', 'bg-emerald-50', 'text-emerald-700', 'shadow-sm');
+          btn.classList.add('border-gray-200', 'bg-white', 'text-gray-700', 'hover:bg-gray-50');
+        }
+      });
+      
+      localStorage.setItem(STORAGE_KEYS.TEMPLATE, templateName);
+    }
+
+    // Bootstrapping the generator
+    setupLogoHandling();
+    initTextBindings();
+    loadInvoiceData();
+    setupEventListeners();
+  });
+</script>
+
+<style>
+  @keyframes modalFadeIn {
+    from {
+      opacity: 0;
+      transform: scale(0.96) translateY(8px);
+    }
+    to {
+      opacity: 1;
+      transform: scale(1) translateY(0);
+    }
+  }
+
+  .animate-modal {
+    animation: modalFadeIn 0.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  }
+</style>
+

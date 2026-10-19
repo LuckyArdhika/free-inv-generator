@@ -1,0 +1,228 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navbar from '../components/Navbar.astro';
+import InvoiceGenerator from '../components/InvoiceGenerator.astro';
+import Footer from '../components/Footer.astro';
+import ArrowRight from 'lucide-astro/ArrowRight';
+import CheckCircle2 from 'lucide-astro/CheckCircle2';
+import ClipboardList from 'lucide-astro/ClipboardList';
+import Building2 from 'lucide-astro/Building2';
+import MessageSquareX from 'lucide-astro/MessageSquareX';
+
+// SEO Title & Description matching requirements
+const pageTitle = "Free Invoice Generator | Create Professional PDF Invoices Online - Quinvy";
+const pageDescription = "Create and download professional PDF invoices in seconds. No credit card, no registration, and 100% free. Add your logo, details, auto-calculate tax/discounts, and print directly from your browser.";
+---
+
+<Layout title={pageTitle} description={pageDescription}>
+  
+  <!-- Global navigation header -->
+  <Navbar />
+
+  <main class="pt-24 min-h-screen">
+    
+    <!-- Hero & Introduction -->
+    <section class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center mt-12 mb-6 no-print">
+      <div class="inline-flex items-center gap-2 bg-emerald-50 border border-emerald-100 px-3 py-1 rounded-full text-primary text-xs font-semibold mb-6">
+        <span class="flex h-2 w-2 relative">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+        </span>
+        100% Free & Unlimited Creator
+      </div>
+      <h1 class="text-4xl sm:text-5xl font-black text-gray-900 tracking-tight mb-4 max-w-4xl mx-auto leading-tight">
+        Free Online <span class="text-transparent bg-clip-text bg-gradient-to-r from-primary to-emerald-600">Invoice Generator</span>
+      </h1>
+      <p class="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
+        Instantly make professional invoices to send to your clients. Customize branding, add line items, calculate totals, and save to PDF. No accounts required.
+      </p>
+    </section>
+
+    <!-- Main Interactive Invoice Generator Application Section -->
+    <section id="generator-tool">
+      <InvoiceGenerator />
+    </section>
+
+    <!-- SEO Rich Copywriting & Marketing Content Sections (Hidden on Print) -->
+    <section class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 mt-24 py-10 space-y-20 border-t border-gray-200/60 no-print">
+      
+      <!-- Section 1: How it works -->
+      <div>
+        <h2 class="text-2xl font-black text-gray-900 mb-6 flex items-center gap-3">
+          <span class="w-8 h-8 rounded-lg bg-emerald-50 text-primary flex items-center justify-center text-sm font-bold">1</span>
+          How to Create an Invoice in Seconds
+        </h2>
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="bg-white p-6 border border-gray-150 rounded-2xl shadow-sm">
+            <h3 class="font-extrabold text-gray-900 mb-2 text-sm uppercase tracking-wide text-primary">01. Add Addresses</h3>
+            <p class="text-xs text-gray-500 leading-relaxed">
+              Fill in your business details (From) and your client's contact info (Bill To) including names, emails, and physical billing addresses.
+            </p>
+          </div>
+          <div class="bg-white p-6 border border-gray-150 rounded-2xl shadow-sm">
+            <h3 class="font-extrabold text-gray-900 mb-2 text-sm uppercase tracking-wide text-primary">02. Input Line Items</h3>
+            <p class="text-xs text-gray-500 leading-relaxed">
+              Add services or products, specify quantities, and set hourly rates. The tool automatically computes amounts, taxes, and discounts.
+            </p>
+          </div>
+          <div class="bg-white p-6 border border-gray-150 rounded-2xl shadow-sm">
+            <h3 class="font-extrabold text-gray-900 mb-2 text-sm uppercase tracking-wide text-primary">03. Print / Save PDF</h3>
+            <p class="text-xs text-gray-500 leading-relaxed">
+              Click the download button. Your browser's print dialog opens with custom stylesheets applied, saving a clean A4 PDF file.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section 2: Essential Checklist -->
+      <div class="bg-white border border-gray-150 rounded-3xl p-8 shadow-sm">
+        <h2 class="text-2xl font-black text-gray-900 mb-4 flex items-center gap-2">
+          <ClipboardList class="text-primary w-6 h-6" />
+          The Professional Invoice Checklist
+        </h2>
+        <p class="text-sm text-gray-500 mb-6 leading-relaxed">
+          Ensure you get paid without administrative delay by double-checking that your generated invoices contain these compliance items before sending:
+        </p>
+        <ul class="grid grid-cols-1 md:grid-cols-2 gap-4 list-none p-0 m-0">
+          <li class="flex items-start gap-3">
+            <CheckCircle2 class="text-primary w-5 h-5 shrink-0 mt-0.5" />
+            <div>
+              <strong class="text-xs font-bold text-gray-900 block">Unique Invoice Number Sequence</strong>
+              <span class="text-xxs text-gray-500 leading-relaxed">Use sequential identifiers (e.g. INV-001) to keep audit trails clear.</span>
+            </div>
+          </li>
+          <li class="flex items-start gap-3">
+            <CheckCircle2 class="text-primary w-5 h-5 shrink-0 mt-0.5" />
+            <div>
+              <strong class="text-xs font-bold text-gray-900 block">Accurate Tax Information</strong>
+              <span class="text-xxs text-gray-500 leading-relaxed">Specify VAT/GST percentages or local tax IDs if legally required for corporate billing.</span>
+            </div>
+          </li>
+          <li class="flex items-start gap-3">
+            <CheckCircle2 class="text-primary w-5 h-5 shrink-0 mt-0.5" />
+            <div>
+              <strong class="text-xs font-bold text-gray-900 block">Clear Dates (Issue & Due Date)</strong>
+              <span class="text-xxs text-gray-500 leading-relaxed">Clearly state when the invoice was drafted and the final payment deadline.</span>
+            </div>
+          </li>
+          <li class="flex items-start gap-3">
+            <CheckCircle2 class="text-primary w-5 h-5 shrink-0 mt-0.5" />
+            <div>
+              <strong class="text-xs font-bold text-gray-900 block">Specific Payment Instructions</strong>
+              <span class="text-xxs text-gray-500 leading-relaxed">Provide IBAN, SWIFT codes, or digital wallets directly in the invoice notes.</span>
+            </div>
+          </li>
+        </ul>
+      </div>
+
+      <!-- Section 3: Why upgrade to Quinvy? -->
+      <div class="text-center space-y-8 py-6">
+        <div class="max-w-2xl mx-auto space-y-4">
+          <h2 class="text-3xl font-black text-gray-900 tracking-tight leading-tight">
+            Take Your Invoicing Beyond Static PDFs
+          </h2>
+          <p class="text-sm text-gray-500 leading-relaxed">
+            Free tools are great for one-off documents, but managing growing businesses requires automation. Save hundreds of administrative hours with the full <strong>Quinvy</strong> portal.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div class="space-y-3">
+            <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-primary mx-auto">
+              <MessageSquareX class="w-6 h-6" />
+            </div>
+            <h3 class="text-sm font-black text-gray-900">Auto-Reminders</h3>
+            <p class="text-xxs text-gray-500 leading-relaxed">
+              No more manual follow-ups. Set automated reminder templates that politely prompt clients to settle outstanding invoices.
+            </p>
+          </div>
+          <div class="space-y-3">
+            <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-primary mx-auto">
+              <Building2 class="w-6 h-6" />
+            </div>
+            <h3 class="text-sm font-black text-gray-900">Multi-Channel Portals</h3>
+            <p class="text-xxs text-gray-500 leading-relaxed">
+              Provide credit card checkouts, local bank wire routing information, and blockchain crypto options to match client preferences.
+            </p>
+          </div>
+          <div class="space-y-3">
+            <div class="w-12 h-12 bg-emerald-50 rounded-xl flex items-center justify-center text-primary mx-auto">
+              <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="w-6 h-6"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
+            </div>
+            <h3 class="text-sm font-black text-gray-900">Real-Time Audits</h3>
+            <p class="text-xxs text-gray-500 leading-relaxed">
+              See the exact timestamp your client opened the invoice email or link. Stop guessing whether payments are processed.
+            </p>
+          </div>
+        </div>
+
+        <div class="pt-6">
+          <a href="/auth/register" class="bg-primary hover:bg-[#037851] text-white px-8 py-4 rounded-xl font-bold text-base transition shadow-xl shadow-primary/20 inline-flex items-center gap-2 no-underline">
+            Try Quinvy Free <ArrowRight class="w-4 h-4" />
+          </a>
+        </div>
+      </div>
+
+      <!-- Section 4: Comprehensive SEO Guide & FAQ -->
+      <div class="border-t border-gray-150 pt-16 space-y-12">
+        <div class="space-y-4">
+          <h2 class="text-2xl font-black text-gray-900">
+            Free Online Invoice Generator: FAQ & Invoicing Guide
+          </h2>
+          <p class="text-sm text-gray-500 leading-relaxed">
+            Need help drafting your client document? Here is a comprehensive guide to understanding billing, optimizing your invoice structure, and securing faster payments.
+          </p>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-8 text-sm">
+          <div class="space-y-3">
+            <h3 class="font-extrabold text-gray-900 text-base">What is an online invoice generator?</h3>
+            <p class="text-gray-500 leading-relaxed text-xs">
+              An online invoice generator is a digital tool that allows freelancers, contractors, and small business owners to create professional billing documents directly in their browser. Instead of wrestling with Word templates or Excel sheets, you simply fill out pre-formatted fields and export a clean PDF.
+            </p>
+          </div>
+
+          <div class="space-y-3">
+            <h3 class="font-extrabold text-gray-900 text-base">Is my business data safe and private?</h3>
+            <p class="text-gray-500 leading-relaxed text-xs">
+              Yes, absolutely. Our free invoice creator operates entirely on the client side (in your web browser). None of your company details, client information, pricing, or logo files are uploaded or stored on our servers. Your drafts are saved locally inside your browser's <code>localStorage</code> cache.
+            </p>
+          </div>
+
+          <div class="space-y-3">
+            <h3 class="font-extrabold text-gray-900 text-base">Can I create invoices in different currencies?</h3>
+            <p class="text-gray-500 leading-relaxed text-xs">
+              Yes. You can select from standard currencies like USD ($), EUR (€), GBP (£), JPY (¥), or custom-define your own symbols (like BTC or any local currency code). The generator will dynamically format and prepend the chosen currency indicator across all line items and final calculations.
+            </p>
+          </div>
+
+          <div class="space-y-3">
+            <h3 class="font-extrabold text-gray-900 text-base">What is the difference between an invoice and a receipt?</h3>
+            <p class="text-gray-500 leading-relaxed text-xs">
+              An invoice is a request for payment sent by a service provider or vendor to a client before the payment is made, detailing the completed work and terms. A receipt is issued after payment is completed, serving as proof of transaction for accounting and tax purposes.
+            </p>
+          </div>
+
+          <div class="space-y-3">
+            <h3 class="font-extrabold text-gray-900 text-base">How can I download a PDF version of my invoice?</h3>
+            <p class="text-gray-500 leading-relaxed text-xs">
+              Once you finish editing, click the <strong>"Print / Download PDF"</strong> button. This opens your system's print menu. Choose <strong>"Save as PDF"</strong> as your destination printer. We apply custom styles that strip away the editor forms and headers, giving you a clean, standalone PDF.
+            </p>
+          </div>
+
+          <div class="space-y-3">
+            <h3 class="font-extrabold text-gray-900 text-base">How does upgrading to Quinvy SaaS benefit me?</h3>
+            <p class="text-gray-500 leading-relaxed text-xs">
+              While our free tool is perfect for occasional invoices, upgrading to a full <strong>Quinvy</strong> account gives you access to a dashboard, automated recurring invoice triggers, payment receipt tracking, and automatic follow-up reminders.
+            </p>
+          </div>
+        </div>
+      </div>
+
+    </section>
+  </main>
+
+  <!-- Global navigation footer -->
+  <Footer />
+
+</Layout>
