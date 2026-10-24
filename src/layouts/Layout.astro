@@ -72,7 +72,35 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
         }
       }
     </script>
+
+    <!-- Anonymous Web Traffic & User Agent Beacon -->
+    <script is:inline>
+      (function() {
+        try {
+          if (typeof window !== 'undefined') {
+            var fullPath = (window.location.pathname || '/free-invoice-generator/') + (window.location.search || '');
+            var payload = JSON.stringify({
+              path: fullPath,
+              referrer: document.referrer || ''
+            });
+            var target = 'https://api.quinvy.com/stats/track-view';
+            if (navigator.sendBeacon) {
+              navigator.sendBeacon(target, new Blob([payload], { type: 'application/json' }));
+            } else {
+              fetch(target, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: payload,
+                mode: 'cors',
+                keepalive: true
+              }).catch(function() {});
+            }
+          }
+        } catch (e) {}
+      })();
+    </script>
   </head>
+
   <body class="bg-gray-50 text-gray-900 selection:bg-green-100 selection:text-green-900">
     <slot />
   </body>
