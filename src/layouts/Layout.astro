@@ -12,6 +12,12 @@ const {
 } = Astro.props;
 
 const canonicalURL = new URL(Astro.url.pathname, Astro.site);
+
+// Configurable analytics beacon endpoint via environment variable
+const statsEndpoint = import.meta.env.PUBLIC_STATS_ENDPOINT;
+
+// Optional Meta Pixel ID via environment variable
+const fbPixelId = import.meta.env.PUBLIC_FACEBOOK_PIXEL_ID;
 ---
 
 <!doctype html>
@@ -73,32 +79,72 @@ const canonicalURL = new URL(Astro.url.pathname, Astro.site);
       }
     </script>
 
-    <!-- Anonymous Web Traffic & User Agent Beacon -->
-    <script is:inline>
-      (function() {
-        try {
-          if (typeof window !== 'undefined') {
-            var fullPath = (window.location.pathname || '/free-invoice-generator/') + (window.location.search || '');
-            var payload = JSON.stringify({
-              path: fullPath,
-              referrer: document.referrer || ''
-            });
-            var target = 'https://api.quinvy.com/stats/track-view';
-            if (navigator.sendBeacon) {
-              navigator.sendBeacon(target, new Blob([payload], { type: 'application/json' }));
-            } else {
-              fetch(target, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: payload,
-                mode: 'cors',
-                keepalive: true
-              }).catch(function() {});
+    {statsEndpoint && (
+      <!-- Anonymous Web Traffic & User Agent Beacon (Enabled when PUBLIC_STATS_ENDPOINT is provided) -->
+      <script is:inline define:vars={{ statsEndpoint }}>
+        (function() {
+          try {
+            if (typeof window !== 'undefined' && statsEndpoint) {
+              var fullPath = (window.location.pathname || '/free-invoice-generator/') + (window.location.search || '');
+              var payload = JSON.stringify({
+                path: fullPath,
+                referrer: document.referrer || ''
+              });
+              if (navigator.sendBeacon) {
+                navigator.sendBeacon(statsEndpoint, new Blob([payload], { type: 'application/json' }));
+              } else {
+                fetch(statsEndpoint, {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: payload,
+                  mode: 'cors',
+                  keepalive: true
+                }).catch(function() {});
+              }
             }
-          }
+          } catch (e) {}
+        })();
+      </script>
+    )}
+
+    {fbPixelId && (
+      <!-- Meta Pixel Code (Enabled when PUBLIC_FACEBOOK_PIXEL_ID is provided) -->
+      <script is:inline define:vars={{ fbPixelId }}>
+        !function(f,b,e,v,n,t,s)
+        {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+        n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+        if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+        n.queue=[];t=b.createElement(e);t.async=!0;
+        t.src=v;s=b.getElementsByTagName(e)[0];
+        s.parentNode.insertBefore(t,s)}(window, document,'script',
+        'https://connect.facebook.net/en_US/fbevents.js');
+        fbq('init', fbPixelId);
+        fbq('track', 'PageView');
+        fbq('track', 'ViewContent', { content_name: 'FreeInvoiceGenerator', content_category: 'HighIntent' });
+
+        // Intent to Sign Up Tracking (Clicks on Register CTAs in Navbar/Footer)
+        try {
+          document.addEventListener('click', function(e) {
+            var el = e.target && e.target.closest('a, button');
+            if (!el) return;
+            var href = el.getAttribute('href') || '';
+            if (href.indexOf('/app/auth/register') !== -1 || href.indexOf('/auth/register') !== -1) {
+              var label = (el.innerText || el.textContent || '').trim();
+              fbq('track', 'Lead', {
+                content_name: label || 'FreeTool_RegisterCTA',
+                content_category: 'IntentToSignUp'
+              });
+            }
+          }, true);
         } catch (e) {}
-      })();
-    </script>
+      </script>
+      <noscript>
+        <img height="1" width="1" style="display:none"
+          src={`https://www.facebook.com/tr?id=${fbPixelId}&ev=PageView&noscript=1`}
+          alt="Facebook Pixel"
+        />
+      </noscript>
+    )}
   </head>
 
   <body class="bg-gray-50 text-gray-900 selection:bg-green-100 selection:text-green-900">
